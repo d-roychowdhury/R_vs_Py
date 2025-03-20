@@ -13,7 +13,7 @@ r <- as.integer(args[4])
 u <- as.integer(args[5])
 NB <- as.integer(args[6])
 n_init_pts <- as.integer(args[7])
-
+ncore <- as.integer(args[8])
 
 
 # arguments are 0-based, we need 1-based file numbering
@@ -25,7 +25,7 @@ n_init_pts <- as.integer(args[7])
 #----------------------------------------------------------------------------------------
 #list_of_settings <- list("n" =n, "p" =p, "r" =r, "u"=u, "NB" =NB, "max_lbfgs_rep" =max_lbfgs_rep)
 
-list_of_settings <- list("n" =n, "p" =p, "r" =r, "u"=u, "NB" =NB, "n_init_pts" = n_init_pts)
+list_of_settings <- list("n" =n, "p" =p, "r" =r, "u"=u, "NB" =NB, "n_init_pts" = n_init_pts, "ncore" = ncore)
 print(list_of_settings)
 
 # Packages needed:----------------------------------------------------------------------
@@ -231,7 +231,7 @@ library(parallel)
 
 # Now using lapply instead of foreach:---------------------------------------------
 #ncore = parallel::detectCores()-2
-ncore = 4
+#ncore = 4
 core_vec = c(1:ncore)
 b_vec = c(1:NB)
 dat = data.table::data.table(boot_idx = b_vec)
@@ -269,15 +269,15 @@ run_boot <- function(core_id){
 
 
  # run the core-based-optimization-python file.
- py_env <- py_run_file("Opt_boot_block_core_id(2).py")
+ py_env <- py_run_file("Opt_boot_block_core_id(3).py") ## change the python code name here as needed.
  A_opt_list = py_env$A_opt_results
  #print(A_opt_list)
  return(A_opt_list)
 }
-time_series <- system.time({
-lst_A_opt_series = lapply(1:ncore, function(core_id) run_boot(core_id))})[3]/60
+#time_series <- system.time({
+#lst_A_opt_series = lapply(1:ncore, function(core_id) run_boot(core_id))})[3]/60
 #print(lst_A_opt)
-lst_A_opt_s_final = unlist(lst_A_opt_series, recursive = FALSE)
+#lst_A_opt_s_final = unlist(lst_A_opt_series, recursive = FALSE)
 
 
 # Set up multicore plan
@@ -297,9 +297,9 @@ time_futlap <- system.time({
 lst_A_opt_futlap_final <- unlist(lst_A_opt_parallel, recursive = FALSE)
 
 ## check if the output A_opt's are similar for series and parallel
-print(lst_A_opt_s_final[[1]])
+#print(lst_A_opt_s_final[[1]])
 print(lst_A_opt_futlap_final[[1]])
-
+print(A_true)
 ## check how the runtimes differ
-print(time_series)
+#print(time_series)
 print(time_futlap)
