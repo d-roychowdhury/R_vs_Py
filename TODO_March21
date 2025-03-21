@@ -1,5 +1,6 @@
 ## TODO:
 1. Use "g1_gwt_optimized" function to calculate and pass G1 and GWT for w_subset into python.
 2. Check if solutions are as correct as before.
-2. IF     time_gain = TRUE, send saptarshi da and continue simulations
+3. Improve the trace calculation of f_listed in .py
+4. IF     time_gain = TRUE, send saptarshi da and continue simulations
    ELSE   improve the get_g1 and get_gwt functions in .py following "g1_gwt_optimized".
