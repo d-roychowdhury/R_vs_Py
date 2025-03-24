@@ -1,4 +1,4 @@
-# EXPERIMENT: RUNNING A SUBSET OF THE NB number of bootstrap blocks in Py
+# EXPERIMENT: RUNNING A SUBSET OF THE NB number of bootstrap blocks in Py, all functions being tensor based
 
 import numpy as np
 import torch
@@ -35,9 +35,11 @@ par = Param()
 
 
 # Convert inputs to tensors and move to device
-X = torch.tensor(X, dtype=torch.float64, device=device)
-Y = torch.tensor(Y, dtype=torch.float64, device=device)
+#X = torch.tensor(X, dtype=torch.float64, device=device)
+#Y = torch.tensor(Y, dtype=torch.float64, device=device)
 w_subset = torch.tensor(w_subset, dtype=torch.float64, device=device)
+g1_submat = torch.tensor(g1_submat, dtype = torch.float64, device = device)
+gwt_submat = torch.tensor(gwt_submat, dtype = torch.float64, device = device)
 par.Psi = torch.tensor(par.Psi, dtype=torch.float64, device=device)
 par.Psi_0 = torch.tensor(par.Psi_0, dtype=torch.float64, device=device)
 par.K_inv = torch.tensor(par.K_inv, dtype=torch.float64, device=device)
@@ -47,29 +49,32 @@ par.M = torch.tensor(par.M, dtype=torch.float64, device=device)
 par.A_env = torch.tensor(par.A_env, dtype=torch.float64, device=device)
 par.init_pts = torch.tensor(par.init_pts, dtype=torch.float64, device=device)
 par.A_true = torch.tensor(par.A_true, dtype=torch.float64, device=device)
+
 # Print types of objects received from R
 print("---------------------------------------------------")
-print("Checking types of objects received from R:")
-print(f"Type of NB: {type(NB)}")
-print(f"Type of n: {type(n)}")
-print(f"Type of p: {type(p)}")
-print(f"Type of r: {type(r)}")
-print(f"Type of u: {type(u)}")
-print(f"Type of Psi: {type(par.Psi)}")
-print(f"Type of Psi_0: {type(par.Psi-0)}")
-print(f"Type of nu: {type(nu)}")
-print(f"Type of nu_0: {type(nu0)}")
-print(f"Type of A0: {type(par.A0)}")
-print(f"Type of M: {type(par.M)}")
-print(f"Type of K_inv: {type(par.K_inv)}")
-print(f"Type of L_inv: {type(par.L_inv)}")
-print(f"Type of A_test: {type(par.A_test)}")
-print(f"Type of A_env: {type(par.A_env)}")
-print(f"Type of init_pts: {type(par.init_pts)}")
-print(f"Type of A_true: {type(par.A_true)}")
-print(f"Type of X: {type(X)}")
-print(f"Type of Y: {type(Y)}")
-print(f"Type of w_subset: {type(w_subset)}")
+#print("Checking types of objects received from R:")
+#print(f"Type of NB: {type(NB)}")
+#print(f"Type of n: {type(n)}")
+#print(f"Type of p: {type(p)}")
+#print(f"Type of r: {type(r)}")
+#print(f"Type of u: {type(u)}")
+#print(f"Type of Psi: {type(par.Psi)}")
+#print(f"Type of Psi_0: {type(par.Psi-0)}")
+#print(f"Type of nu: {type(nu)}")
+#print(f"Type of nu_0: {type(nu0)}")
+#print(f"Type of A0: {type(par.A0)}")
+#print(f"Type of M: {type(par.M)}")
+#print(f"Type of K_inv: {type(par.K_inv)}")
+#print(f"Type of L_inv: {type(par.L_inv)}")
+#print(f"Type of A_test: {type(par.A_test)}")
+#print(f"Type of A_env: {type(par.A_env)}")
+#print(f"Type of init_pts: {type(par.init_pts)}")
+#print(f"Type of A_true: {type(par.A_true)}")
+#print(f"Type of X: {type(X)}")
+#print(f"Type of Y: {type(Y)}")
+#print(f"Type of g1_submat: {type(g1_submat)}")
+#print(f"sixe of f1_submat: {g1_submat.size}")
+print(g1_submat)
 print("---------------------------------------------------")
 #print("reached here")
 def generate_gammas_from_A_torch(A): ## A is 2d tensor
@@ -108,26 +113,11 @@ def weighted_centering(data, weights): ## data is 2d tensor, weights is 2d tenso
     means = torch.sum(data * weights, dim=0) / torch.sum(weights)
     return data - means
 
-def generateFunctions_listed(X, Y, w, params): # X =2d tensor, Y =2d tensor, w = an element of a tensor of order= order of w_subset
+def generateFunctions_listed(w, g1, gwt, params): # X =2d tensor, Y =2d tensor, w = an element of a tensor of order= order of w_subset
     
-    Dw = torch.diag(w)
-    Ycw = weighted_centering(Y, w)
-    Xcw = weighted_centering(X, w)
-    
-    def get_g1(w):
-        return Ycw.T @ Dw @ Ycw
-
-    def get_gwt(w):
-           
-        Mwt = Xcw.T @ Dw @ Xcw + params.M
-        Mwt_inv = torch.linalg.inv(Mwt)  # Use torch.linalg.inv
-        ewt = (Mwt_inv @ Xcw.T @ Dw @ Ycw).T
-        gwt = Ycw.T @ Dw @ Ycw - ewt @ Mwt @ ewt.T
-        return gwt
-
     NW = torch.sum(w)  # Use torch.sum
-    G1 = get_g1(w)
-    GWT = get_gwt(w)
+    #G1 = get_g1(w) ## do this more efficiently in R or python.
+    #GWT = get_gwt(w)
     nu = params.nu
     nu_0 = params.nu_0
     c1 = - (nu + NW - 1) / 2
@@ -135,16 +125,16 @@ def generateFunctions_listed(X, Y, w, params): # X =2d tensor, Y =2d tensor, w =
 
     def f_listed(A):
         Gm, Gm0 = generate_gammas_from_A_torch(A)
-        t1 = Gm.T @ GWT @ Gm + par.Psi
-        t2 = Gm0.T @ G1 @ Gm0 + par.Psi_0
+        t1 = Gm.T @ gwt @ Gm + par.Psi
+        t2 = Gm0.T @ g1 @ Gm0 + par.Psi_0
         tmp3 = A - par.A0
-        t3 = par.K_inv @ tmp3 @ par.L_inv @ tmp3.T
+        t3 = par.K_inv @ tmp3 @ par.L_inv @ tmp3.T ## line 238 of predenv_...
         final = c1 * torch.logdet(t1) + c2 * torch.logdet(t2) - torch.trace(t3) / 2
         return -final
 
     return f_listed
 
-def closure(A_nparray, w, ncol): ## A_nparray is a 1d tensor?
+def closure(A_nparray, w, g1, gwt, ncol): ## A_nparray is a 1d tensor?
     nrow = A_nparray.size // ncol
     #print(nrow)
     #print(f"Type of A_nparray: {type(A_nparray)}") # is np.array
@@ -152,14 +142,14 @@ def closure(A_nparray, w, ncol): ## A_nparray is a 1d tensor?
     A_tensor = torch.tensor(A_nparray, dtype=torch.float64, requires_grad=True)
     A_tensor = A_tensor.reshape(nrow, ncol)
     #print(A_tensor.shape)
-    log_post_w = generateFunctions_listed(X, Y, w, par)
+    log_post_w = generateFunctions_listed(w, g1, gwt, par)
     with torch.enable_grad():
         f = log_post_w(A_tensor) ## A_tensor should be a 2d tensor
         grad = autograd.grad(f, A_tensor)[0]
     grad_flattened_col = grad.T.flatten()
     return f.detach().cpu(), grad_flattened_col.detach().cpu()
 
-def minimize_wi(wi):
+def minimize_wi(wi, g1, gwt):
 
     A_init = par.A_env.clone().detach()  # Important: Create a copy
     #A_init = A_init.T.flatten()  # Transpose then flatten
@@ -173,7 +163,7 @@ def minimize_wi(wi):
    # A_init = A_init.permute(1, 0).flatten()  # Transpose then flatten
     print(f"Type of A_init: {type(A_init)}")
     # First minimization
-    result = minimize(fun=lambda x: closure(x, wi, par.u),
+    result = minimize(fun=lambda x: closure(x, wi, g1, gwt, par.u),
                       x0=A_init.cpu(),  # Move initial point to CPU
                       jac=True,
                       method='BFGS',
@@ -188,7 +178,7 @@ def minimize_wi(wi):
         #A_init = A_init.permute(1, 0).flatten()  # Transpose then flatten
         #print("check shape of A_init")
         print(A_init.shape)
-        result = minimize(fun=lambda x: closure(x, wi, par.u),
+        result = minimize(fun=lambda x: closure(x, wi, g1, gwt, par.u),
                           x0=A_init.cpu(),  # Move initial point to CPU
                           jac=True,
                           method='BFGS',
@@ -206,7 +196,17 @@ def minimize_wi(wi):
 
 # Run minimize_wi for wi in w_subset
 A_opt_results = []
-for wi in w_subset:
-    A_opt_wi = minimize_wi(wi)
+for w, g1, gwt in zip(w_subset, g1_submat, gwt_submat):
+    
+    ## the gollwoing commented line shows the transfer of g1,gwt to python is correct:
+    ## we used Rscript 'Opt_boot_futlap(2).R' 12 50 2 3 1 2 5 1 for this test.
+    #print("-----------------------------------in the loop----------------------------")
+    #print("w:")
+    #print(w)
+    #print("g1")
+    #print(g1)
+    #print("-----------------------------------in the loop----------------------------")
+    
+    A_opt_wi = minimize_wi(w, g1, gwt)
     A_opt_results.append(A_opt_wi)
 
