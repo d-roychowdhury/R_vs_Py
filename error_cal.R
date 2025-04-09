@@ -193,7 +193,7 @@ comparisons_wbb <- function(NB,A_arg){ # where t is the time taken to calculate 
               #"time_beta2" = time_beta2[3]/60,
               "err_freq_beta1" = err_freq_beta1,
               "err_freq_beta2" = err_freq_beta2,
-              "err_bayes_beta2" = err_bayes_beta2,
+              "err_bayes_beta_cbb" = err_bayes_beta2,
               "err_freq_beta_env" = err_freq_beta_env))
   
 }
