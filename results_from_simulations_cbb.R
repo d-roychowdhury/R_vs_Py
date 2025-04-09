@@ -6,7 +6,8 @@ r = as.integer(args[4])
 u = as.integer(args[5])
 # Initialize an empty list to store the outputs
 output_list <- list()
-
+#print("n_sim in the results_from_simulations_cbb.R file")
+#print(n_sim)
 # Loop over the indices 1 to n_sim
 for (i in 1:n_sim) {
   # Generate the file name dynamically
@@ -15,6 +16,7 @@ for (i in 1:n_sim) {
   # Read the RDS file into a list
   output_list[[i]] <- readRDS(file_name)
 }
+#print(output_list)
 
 average_field <- function(list_of_lists, field_name, n_sim){
   sum=0
@@ -52,7 +54,7 @@ out_obj <- list(#"time_beta1_avg" =time_beta1_avg,
                 "total_time_median" = total_time_median,
                 "parallel_time_mean" = parallel_time_mean,
                 "parallel_time_median" = parallel_time_median,
-                "total_time_mean" = total_time,
+                #"total_time_mean" = total_time,
                 "fr_mse_envlp"= fr_mse_envlp,
                 "fr_mse_cbb_method_1" = fr_mse_cbb_method_1,
                 "fr_mse_cbb_method_2" = fr_mse_cbb_method_2,

@@ -9,13 +9,13 @@ p=20
 #r = $3
 r=100
 #u = $4
-u=6
+u=1
 #nboot = $5
 nboot=100
 ninit=4
 ncore=6
-nsim=1
-#nsim=25
+#nsim=1
+nsim=25
 # Read seeds into an array
 mapfile -t seeds < seed.txt
 
@@ -28,8 +28,9 @@ for ((i=0; i<$nsim; i++)); do
     
 done
 
+#Rscript the_other_script.R "$nsim" "$n" "$p" "$r" "$u"
 ## calculate the mean and median measures for cbb:
-Rscript results_from_simulations_cbb "$nsim" "$n" "$p" "$r" "$u" > cbb_measures_1000_2_100_6_with_nsim_1.txt
+Rscript results_from_simulations_cbb.R "$nsim" "$n" "$p" "$r" "$u" > cbb_measures_1000_2_100_6_with_nsim_1.txt
 
 ##cat $(ls cbb*)
 #Fatal error: cannot open file 'results_from_simulations_cbb': No such file or directory
