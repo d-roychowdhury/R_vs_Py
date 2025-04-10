@@ -1,0 +1,26 @@
+$total_time_mean
+ elapsed 
+1.534798 
+
+$total_time_median
+[1] 1.402467
+
+$parallel_time_mean
+ elapsed 
+1.388852 
+
+$parallel_time_median
+[1] 1.254
+
+$fr_mse_envlp
+[1] 4.662504
+
+$fr_mse_cbb_method_1
+[1] 1.010291
+
+$fr_mse_cbb_method_2
+[1] 1.010297
+
+$bayes_mse_cbb
+[1] 5.279194
+

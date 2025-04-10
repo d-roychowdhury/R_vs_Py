@@ -1,0 +1,23 @@
+Rscript mcmc_check_5.R seed n p r u:
+(results based on one simulation)
+
+Rscript mcmc_check_5.R 12 1000 20 100 1
+  |======================================================================| 100%
+ elapsed 
+7.828117 
+$err_bayes_beta_mcmc
+[1] 1.475844
+
+$err_freq_beta_mcmc
+[1] 0.7591082
+
+Rscript mcmc_check_5.R 12 1000 20 100 6
+  |======================================================================| 100%
+elapsed 
+25.4961 
+$err_bayes_beta_mcmc
+[1] 9.053876
+
+$err_freq_beta_mcmc
+[1] 0.9387345
+
